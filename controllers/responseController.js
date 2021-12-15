@@ -5,8 +5,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const User = require('../model/user');
+const auth = require('../middleware/auth');
 
-
+const maxAge = 3 * 24 * 60 * 60;
 
 
 //function that handles the signup of a new user
@@ -48,6 +49,7 @@ async function register (req, res, next) {
         // Save user to database
         const savedUser = await newUser.save();
 
+        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 });
         // Send response
        return res.status(201).json(savedUser);
     }
@@ -84,7 +86,7 @@ async function login(req, res, next) {
 
             await user.save();
 
-          
+            res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 });
 
             //send response
            return res.status(200).json(user);
@@ -101,7 +103,8 @@ async function login(req, res, next) {
 
 //function that handles the logout of a user
 function logout(req, res, next) {
-    res.send('logout handler');
+    res.clearCookie('jwt');
+    res.send('logout');
 }
 
 
